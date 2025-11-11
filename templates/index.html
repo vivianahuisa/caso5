@@ -168,6 +168,11 @@
         <form method="post" action="/evaluar">
             <label for="ingresos"><i class="ri-money-dollar-circle-line"></i> Ingresos (0 - 10)</label>
             <input type="number" name="ingresos" id="ingresos" min="0" max="10" step="1" placeholder="Ejemplo: 6" required>
+
+            <!-- Barra dinámica de ingresos -->
+            <div class="progress-container">
+                <div id="barra-ingresos" class="progress-bar"></div>
+            </div>
             <div class="leyenda">0–3: Deficiente · 4–6: Regular · 7–10: Excelente</div>
 
             <div class="guia">
@@ -181,6 +186,11 @@
 
             <label for="historial"><i class="ri-bar-chart-line"></i> Historial Crediticio (0 - 10)</label>
             <input type="number" name="historial" id="historial" min="0" max="10" step="1" placeholder="Ejemplo: 7" required>
+
+            <!-- Barra dinámica de historial -->
+            <div class="progress-container">
+                <div id="barra-historial" class="progress-bar"></div>
+            </div>
             <div class="leyenda">0–3: Deficiente · 4–6: Regular · 7–10: Excelente</div>
 
             <button type="submit">Evaluar Riesgo</button>
@@ -198,5 +208,30 @@
             <i class="ri-shield-check-line"></i> Modelo de lógica difusa | Viviana Huisa 4to ciclo
         </div>
     </div>
+
+    <script>
+        function actualizarBarra(idInput, idBarra) {
+            const valor = parseFloat(document.getElementById(idInput).value);
+            const barra = document.getElementById(idBarra);
+
+            if (isNaN(valor) || valor < 0) {
+                barra.style.width = "0%";
+                return;
+            }
+
+            const porcentaje = Math.min((valor / 10) * 100, 100);
+            let color = "#ccc";
+            if (valor <= 3) color = "#ff4d4d";       // rojo
+            else if (valor <= 6) color = "#ffa500";  // naranja
+            else color = "#00cc66";                  // verde
+
+            barra.style.width = porcentaje + "%";
+            barra.style.background = color;
+        }
+
+        document.getElementById('ingresos').addEventListener('input', () => actualizarBarra('ingresos', 'barra-ingresos'));
+        document.getElementById('historial').addEventListener('input', () => actualizarBarra('historial', 'barra-historial'));
+    </script>
 </body>
 </html>
+
