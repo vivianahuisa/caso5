@@ -1,12 +1,9 @@
-
-from flask import Flask, request, jsonify, render_template
-from flask_cors import CORS
+from flask import Flask, render_template, request
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
 app = Flask(__name__)
-CORS(app)
 
 # --- Modelo difuso ---
 ingresos = ctrl.Antecedent(np.arange(0, 10.1, 0.1), 'ingresos')
@@ -41,35 +38,45 @@ rules = [
 credit_ctrl = ctrl.ControlSystem(rules)
 credit_simulation = ctrl.ControlSystemSimulation(credit_ctrl)
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
 @app.route('/evaluar', methods=['POST'])
 def evaluar():
-    data = request.get_json()
-    val_ingresos = float(data['ingresos'])
-    val_historial = float(data['historial'])
+    val_ingresos = float(request.form['ingresos'])
+    val_historial = float(request.form['historial'])
 
     credit_simulation.input['ingresos'] = val_ingresos
     credit_simulation.input['historial'] = val_historial
     credit_simulation.compute()
 
-    puntaje_riesgo = credit_simulation.output['riesgo']
+    puntaje_riesgo = round(credit_simulation.output['riesgo'], 2)
 
     if puntaje_riesgo <= 30:
         decision = "RECHAZADO (Riesgo Muy Alto)"
+        color = "#ff4d4d"
+        nivel = "Riesgo Muy Alto"
     elif puntaje_riesgo <= 60:
         decision = "REQUIERE REVISIÓN MANUAL"
+        color = "#ffa500"
+        nivel = "Riesgo Medio"
     elif puntaje_riesgo <= 80:
         decision = "APROBADO - Estándar"
+        color = "#00cc66"
+        nivel = "Riesgo Bajo"
     else:
         decision = "APROBADO - Preferente"
+        color = "#0099ff"
+        nivel = "Riesgo Muy Bajo"
 
-    return jsonify({
-        'puntaje_riesgo': round(puntaje_riesgo, 2),
-        'decision': decision
-    })
+    return render_template(
+        'index.html',
+        puntaje_riesgo=puntaje_riesgo,
+        decision=decision,
+        nivel=nivel,
+        color=color
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
