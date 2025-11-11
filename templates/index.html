@@ -14,7 +14,10 @@
         }
 
         body {
-            background: linear-gradient(rgba(0, 120, 255, 0.8), rgba(0, 198, 255, 0.8)), url("USIL_IMAGEN.png") no-repeat center center fixed;
+
+            background: 
+                linear-gradient(rgba(0, 120, 255, 0.55), rgba(0, 198, 255, 0.55)),
+                url("USIL_IMAGEN.png") no-repeat center center fixed;
             background-size: cover;
             display: flex;
             justify-content: center;
@@ -26,7 +29,7 @@
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(8px);
             width: 420px;
             padding: 30px 40px;
@@ -211,27 +214,26 @@
 
     <script>
         function actualizarBarra(idInput, idBarra) {
-            const valor = parseFloat(document.getElementById(idInput).value);
+            const input = document.getElementById(idInput);
             const barra = document.getElementById(idBarra);
 
-            if (isNaN(valor) || valor < 0) {
-                barra.style.width = "0%";
-                return;
-            }
+            input.addEventListener("input", () => {
+                let valor = parseFloat(input.value);
+                if (isNaN(valor) || valor < 0) valor = 0;
+                if (valor > 10) valor = 10;
 
-            const porcentaje = Math.min((valor / 10) * 100, 100);
-            let color = "#ccc";
-            if (valor <= 3) color = "#ff4d4d";       // rojo
-            else if (valor <= 6) color = "#ffa500";  // naranja
-            else color = "#00cc66";                  // verde
+                barra.style.width = (valor * 10) + "%";
 
-            barra.style.width = porcentaje + "%";
-            barra.style.background = color;
+                if (valor <= 3) barra.style.background = "#ff4d4d";        // rojo
+                else if (valor <= 6) barra.style.background = "#ffa500";   // naranja
+                else barra.style.background = "#00cc66";                   // verde
+            });
         }
 
-        document.getElementById('ingresos').addEventListener('input', () => actualizarBarra('ingresos', 'barra-ingresos'));
-        document.getElementById('historial').addEventListener('input', () => actualizarBarra('historial', 'barra-historial'));
+        actualizarBarra("ingresos", "barra-ingresos");
+        actualizarBarra("historial", "barra-historial");
     </script>
 </body>
 </html>
+
 
