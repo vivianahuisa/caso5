@@ -65,9 +65,9 @@
             outline: none;
         }
 
-            input:focus {
-                border-color: #0078ff;
-            }
+        input:focus {
+            border-color: #0078ff;
+        }
 
         .progress-container {
             width: 100%;
@@ -118,9 +118,9 @@
             transition: background 0.3s ease;
         }
 
-            button:hover {
-                background: #005fcc;
-            }
+        button:hover {
+            background: #005fcc;
+        }
 
         .resultado-box {
             margin-top: 25px;
@@ -128,7 +128,6 @@
             border-radius: 10px;
             padding: 20px;
             border-left: 6px solid #0078ff;
-            display: none;
             text-align: center;
         }
 
@@ -156,127 +155,48 @@
             color: #666;
         }
 
-            .footer i {
-                color: #0078ff;
-            }
+        .footer i {
+            color: #0078ff;
+        }
     </style>
 </head>
 <body>
-
     <div class="container">
         <i class="ri-bank-card-line icon"></i>
         <h1>Evaluador Crediticio</h1>
 
-        <label for="ingresos"><i class="ri-money-dollar-circle-line"></i> Ingresos (0 - 10)</label>
-        <input type="number" id="ingresos" min="0" max="10" step="1" placeholder="Ejemplo: 6" required>
-        <div class="progress-container">
-            <div id="barra-ingresos" class="progress-bar"></div>
-        </div>
-        <div class="leyenda">0–3: Deficiente · 4–6: Regular · 7–10: Excelente</div>
+        <form method="post" action="/evaluar">
+            <label for="ingresos"><i class="ri-money-dollar-circle-line"></i> Ingresos (0 - 10)</label>
+            <input type="number" name="ingresos" id="ingresos" min="0" max="10" step="1" placeholder="Ejemplo: 6" required>
+            <div class="leyenda">0–3: Deficiente · 4–6: Regular · 7–10: Excelente</div>
 
-        <div class="guia">
-            <strong>Guía de referencia (S/):</strong><br>
-            0–2 ➜ menos de S/ 1300<br>
-            3–4 ➜ entre S/ 1300 - S/ 2000<br>
-            5–6 ➜ entre S/ 2000 - S/ 3000<br>
-            7–8 ➜ entre S/ 3000 - S/ 5000<br>
-            9–10 ➜ más de S/ 5000
-        </div>
+            <div class="guia">
+                <strong>Guía de referencia (S/):</strong><br>
+                0–2 ➜ menos de S/ 1300<br>
+                3–4 ➜ entre S/ 1300 - S/ 2000<br>
+                5–6 ➜ entre S/ 2000 - S/ 3000<br>
+                7–8 ➜ entre S/ 3000 - S/ 5000<br>
+                9–10 ➜ más de S/ 5000
+            </div>
 
-        <label for="historial"><i class="ri-bar-chart-line"></i> Historial Crediticio (0 - 10)</label>
-        <input type="number" id="historial" min="0" max="10" step="1" placeholder="Ejemplo: 7" required>
-        <div class="progress-container">
-            <div id="barra-historial" class="progress-bar"></div>
-        </div>
-        <div class="leyenda">0–3: Deficiente · 4–6: Regular · 7–10: Excelente</div>
+            <label for="historial"><i class="ri-bar-chart-line"></i> Historial Crediticio (0 - 10)</label>
+            <input type="number" name="historial" id="historial" min="0" max="10" step="1" placeholder="Ejemplo: 7" required>
+            <div class="leyenda">0–3: Deficiente · 4–6: Regular · 7–10: Excelente</div>
 
-        <button onclick="evaluar()">Evaluar Riesgo</button>
+            <button type="submit">Evaluar Riesgo</button>
+        </form>
 
-        <div id="resultado" class="resultado-box">
-            <p class="puntaje" id="puntaje"></p>
-            <p class="nivel" id="nivel"></p>
-            <p class="decision" id="decision"></p>
+        {% if puntaje_riesgo %}
+        <div class="resultado-box" style="border-left-color: {{ color }};">
+            <p class="puntaje" style="color: {{ color }};">{{ puntaje_riesgo }}</p>
+            <p class="nivel" style="color: {{ color }};">{{ nivel }}</p>
+            <p class="decision">{{ decision }}</p>
         </div>
+        {% endif %}
 
         <div class="footer">
             <i class="ri-shield-check-line"></i> Modelo de lógica difusa | Viviana Huisa 4to ciclo
         </div>
     </div>
-
-    <script>
-        function actualizarBarra(idInput, idBarra) {
-            const valor = parseFloat(document.getElementById(idInput).value);
-            const barra = document.getElementById(idBarra);
-
-            if (isNaN(valor) || valor < 0) {
-                barra.style.width = "0%";
-                return;
-            }
-
-            const porcentaje = Math.min((valor / 10) * 100, 100);
-            let color = "#ccc";
-            if (valor <= 3) color = "#ff4d4d";
-            else if (valor <= 6) color = "#ffa500";
-            else color = "#00cc66";
-
-            barra.style.width = porcentaje + "%";
-            barra.style.background = color;
-        }
-
-        document.getElementById('ingresos').addEventListener('input', () => actualizarBarra('ingresos', 'barra-ingresos'));
-        document.getElementById('historial').addEventListener('input', () => actualizarBarra('historial', 'barra-historial'));
-
-        async function evaluar() {
-            const ingresos = document.getElementById("ingresos").value;
-            const historial = document.getElementById("historial").value;
-            const resultadoDiv = document.getElementById("resultado");
-            const puntajeTxt = document.getElementById("puntaje");
-            const nivelTxt = document.getElementById("nivel");
-            const decisionTxt = document.getElementById("decision");
-
-            if (ingresos === "" || historial === "") {
-                alert("Por favor, completa ambos campos.");
-                return;
-            }
-            if (ingresos > 10 || historial > 10) {
-                alert("El valor máximo permitido es 10. Intenta de nuevo.");
-                return;
-            }
-            if (!Number.isInteger(Number(ingresos)) || !Number.isInteger(Number(historial))) {
-                alert("Solo se permiten números enteros (sin decimales).");
-                return;
-            }
-
-            try {
-                const resp = await fetch("http://127.0.0.1:5000/evaluar", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ingresos, historial })
-                });
-                const data = await resp.json();
-
-                let color = "#0078ff";
-                let nivel = "";
-
-                if (data.puntaje_riesgo <= 30) { color = "#ff4d4d"; nivel = "Riesgo Muy Alto"; }
-                else if (data.puntaje_riesgo <= 60) { color = "#ffa500"; nivel = "Riesgo Medio"; }
-                else if (data.puntaje_riesgo <= 80) { color = "#00cc66"; nivel = "Riesgo Bajo"; }
-                else { color = "#0099ff"; nivel = "Riesgo Muy Bajo"; }
-
-                puntajeTxt.textContent = `${data.puntaje_riesgo}`;
-                puntajeTxt.style.color = color;
-                nivelTxt.textContent = nivel;
-                nivelTxt.style.color = color;
-                decisionTxt.textContent = data.decision;
-
-                resultadoDiv.style.display = "block";
-                resultadoDiv.style.borderLeftColor = color;
-            } catch (err) {
-                alert("Error al conectar con el servidor Flask.");
-            }
-        }
-    </script>
-
 </body>
 </html>
-
